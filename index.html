@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResQNav - Rescue Navigation System</title>
+    <meta name="description" content="ResQNav is a smart rescue navigation system designed to help first responders and rescue teams navigate efficiently during emergencies.">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+        <div class="nav-brand">
+            <span class="nav-icon">🚨</span>
+            <span class="nav-title">ResQNav</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#hero">Home</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero" id="hero">
+        <div class="hero-particles" id="particles"></div>
+        <div class="hero-content">
+            <div class="hero-badge">🛰️ Smart Rescue Navigation</div>
+            <h1 class="hero-title">
+                Navigate. Rescue. <span class="gradient-text">Save Lives.</span>
+            </h1>
+            <p class="hero-subtitle">
+                ResQNav is an intelligent rescue navigation system that empowers first responders 
+                with real-time route optimization, hazard mapping, and team coordination during emergencies.
+            </p>
+            <div class="hero-buttons">
+                <a href="#features" class="btn btn-primary">Explore Features</a>
+                <a href="#about" class="btn btn-secondary">Learn More</a>
+            </div>
+        </div>
+        <div class="hero-glow"></div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="section-header">
+            <h2>Core Features</h2>
+            <p>Designed for speed, accuracy, and reliability when every second counts.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📍</div>
+                <h3>Real-Time Tracking</h3>
+                <p>Track rescue teams in real-time with GPS precision. Know exactly where your units are at every moment.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🗺️</div>
+                <h3>Smart Route Planning</h3>
+                <p>AI-powered route optimization that factors in road conditions, hazards, and traffic to find the fastest path.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚠️</div>
+                <h3>Hazard Mapping</h3>
+                <p>Live hazard zone overlays with crowd-sourced data and satellite imagery for informed decision-making.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📡</div>
+                <h3>Offline Mode</h3>
+                <p>Full functionality even without internet. Pre-cached maps and local mesh networking keep you connected.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3>Team Coordination</h3>
+                <p>Assign zones, share waypoints, and communicate with your team through an integrated command center.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Analytics Dashboard</h3>
+                <p>Post-mission analytics and reporting to improve response times and operational efficiency.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="about" id="about">
+        <div class="about-content">
+            <div class="about-text">
+                <h2>About <span class="gradient-text">ResQNav</span></h2>
+                <p>
+                    ResQNav was born from the need to modernize emergency response navigation. 
+                    Traditional navigation tools weren't built for the chaos of disaster zones — 
+                    blocked roads, shifting hazards, and the need for real-time team coordination.
+                </p>
+                <p>
+                    Our mission is to give every first responder the tools they need to save more 
+                    lives, faster. Built with cutting-edge technology and designed with input from 
+                    real rescue professionals.
+                </p>
+                <div class="about-stats">
+                    <div class="stat">
+                        <span class="stat-number">50%</span>
+                        <span class="stat-label">Faster Response</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">99.9%</span>
+                        <span class="stat-label">Uptime</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">24/7</span>
+                        <span class="stat-label">Support</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="contact" id="contact">
+        <div class="section-header">
+            <h2>Get In Touch</h2>
+            <p>Interested in ResQNav? Reach out and let's talk about how we can help your team.</p>
+        </div>
+        <form class="contact-form" id="contactForm">
+            <div class="form-row">
+                <input type="text" placeholder="Your Name" required id="nameInput">
+                <input type="email" placeholder="Your Email" required id="emailInput">
+            </div>
+            <textarea placeholder="Your Message" rows="5" required id="messageInput"></textarea>
+            <button type="submit" class="btn btn-primary" id="submitBtn">Send Message</button>
+        </form>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="nav-icon">🚨</span>
+                <span>ResQNav</span>
+            </div>
+            <p>© 2026 ResQNav. Built to save lives.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
