@@ -3,137 +3,366 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ResQNav - Rescue Navigation System</title>
-    <meta name="description" content="ResQNav is a smart rescue navigation system designed to help first responders and rescue teams navigate efficiently during emergencies.">
+    <title>ResQNav — Dynamic Routing for Smart Cities</title>
+    <meta name="description" content="ResQNav is the dynamic routing system for smart cities. Prioritizing emergency responders while actively rerouting daily commuters to save lives and eliminate gridlock.">
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
+
+    <!-- ==================== NAVBAR ==================== -->
     <nav class="navbar" id="navbar">
-        <div class="nav-brand">
-            <span class="nav-icon">🚨</span>
+        <div class="nav-brand" id="nav-brand">
+            <div class="nav-logo-icon">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                    <rect x="2" y="2" width="24" height="24" rx="6" stroke="url(#logoGrad)" stroke-width="2" fill="none"/>
+                    <path d="M9 14L13 18L19 10" stroke="url(#logoGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="14" cy="14" r="3" fill="url(#logoGrad)" opacity="0.3"/>
+                    <defs>
+                        <linearGradient id="logoGrad" x1="0" y1="0" x2="28" y2="28">
+                            <stop offset="0%" stop-color="#818cf8"/>
+                            <stop offset="100%" stop-color="#6366f1"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
             <span class="nav-title">ResQNav</span>
         </div>
-        <ul class="nav-links">
-            <li><a href="#hero">Home</a></li>
-            <li><a href="#features">Features</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#contact">Contact</a></li>
+
+        <ul class="nav-links" id="nav-links">
+            <li><a href="#how-it-works">How it Works</a></li>
+            <li><a href="#tech-stack">Tech Stack</a></li>
+            <li><a href="#smart-city">Smart City</a></li>
         </ul>
+
+        <div class="nav-actions" id="nav-actions">
+            <a href="#navigation" class="btn btn-ghost" id="normal-login-btn">Normal Login</a>
+            <a href="#emergencies" class="btn btn-solid" id="extremity-login-btn">Extremity Login</a>
+        </div>
+
+        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
     </nav>
 
+    <!-- ==================== HERO SECTION ==================== -->
     <section class="hero" id="hero">
-        <div class="hero-particles" id="particles"></div>
+        <div class="hero-glow-orb"></div>
+        <div class="hero-glow-orb hero-glow-orb--secondary"></div>
+        <div class="hero-grid-bg"></div>
+
         <div class="hero-content">
-            <div class="hero-badge">🛰️ Smart Rescue Navigation</div>
-            <h1 class="hero-title">
-                Navigate. Rescue. <span class="gradient-text">Save Lives.</span>
+            <div class="hero-badge" id="hero-badge">
+                <span class="badge-dot"></span>
+                <span>Powered by Gemini AI &amp; Real-time Maps</span>
+            </div>
+
+            <h1 class="hero-title" id="hero-title">
+                The dynamic routing<br>system for <span class="text-gradient">smart cities.</span>
             </h1>
-            <p class="hero-subtitle">
-                ResQNav is an intelligent rescue navigation system that empowers first responders 
-                with real-time route optimization, hazard mapping, and team coordination during emergencies.
+
+            <p class="hero-subtitle" id="hero-subtitle">
+                Prioritizing emergency responders while actively rerouting<br>
+                daily commuters to save lives and eliminate gridlock.
             </p>
-            <div class="hero-buttons">
-                <a href="#features" class="btn btn-primary">Explore Features</a>
-                <a href="#about" class="btn btn-secondary">Learn More</a>
-            </div>
-        </div>
-        <div class="hero-glow"></div>
-    </section>
 
-    <section class="features" id="features">
-        <div class="section-header">
-            <h2>Core Features</h2>
-            <p>Designed for speed, accuracy, and reliability when every second counts.</p>
-        </div>
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">📍</div>
-                <h3>Real-Time Tracking</h3>
-                <p>Track rescue teams in real-time with GPS precision. Know exactly where your units are at every moment.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🗺️</div>
-                <h3>Smart Route Planning</h3>
-                <p>AI-powered route optimization that factors in road conditions, hazards, and traffic to find the fastest path.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">⚠️</div>
-                <h3>Hazard Mapping</h3>
-                <p>Live hazard zone overlays with crowd-sourced data and satellite imagery for informed decision-making.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">📡</div>
-                <h3>Offline Mode</h3>
-                <p>Full functionality even without internet. Pre-cached maps and local mesh networking keep you connected.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">👥</div>
-                <h3>Team Coordination</h3>
-                <p>Assign zones, share waypoints, and communicate with your team through an integrated command center.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">📊</div>
-                <h3>Analytics Dashboard</h3>
-                <p>Post-mission analytics and reporting to improve response times and operational efficiency.</p>
+            <div class="hero-buttons" id="hero-buttons">
+                <a href="#navigation" class="btn btn-primary-large" id="cta-navigation">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                    Enter Navigation
+                    <span class="btn-label">Commuters</span>
+                </a>
+                <a href="#emergencies" class="btn btn-danger-large" id="cta-emergency">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Enter Emergency Portal
+                    <span class="btn-label">Responders</span>
+                </a>
             </div>
         </div>
     </section>
 
-    <section class="about" id="about">
-        <div class="about-content">
-            <div class="about-text">
-                <h2>About <span class="gradient-text">ResQNav</span></h2>
-                <p>
-                    ResQNav was born from the need to modernize emergency response navigation. 
-                    Traditional navigation tools weren't built for the chaos of disaster zones — 
-                    blocked roads, shifting hazards, and the need for real-time team coordination.
-                </p>
-                <p>
-                    Our mission is to give every first responder the tools they need to save more 
-                    lives, faster. Built with cutting-edge technology and designed with input from 
-                    real rescue professionals.
-                </p>
-                <div class="about-stats">
-                    <div class="stat">
-                        <span class="stat-number">50%</span>
-                        <span class="stat-label">Faster Response</span>
+    <!-- ==================== MAP INTERFACE SHOWCASE ==================== -->
+    <section class="map-showcase" id="how-it-works">
+        <div class="section-label">
+            <span class="section-label-dot"></span>
+            Live Dashboard Preview
+        </div>
+        <div class="map-dashboard" id="map-dashboard">
+            <!-- Glassmorphism Sidebar (Apple Maps style) -->
+            <aside class="map-sidebar" id="map-sidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-avatar">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
                     </div>
-                    <div class="stat">
-                        <span class="stat-number">99.9%</span>
-                        <span class="stat-label">Uptime</span>
+                    <span>Dashboard</span>
+                </div>
+                <nav class="sidebar-nav">
+                    <a href="#" class="sidebar-link active" id="sidebar-search">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        Search
+                    </a>
+                    <a href="#" class="sidebar-link" id="sidebar-guides">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        Guides
+                    </a>
+                    <a href="#" class="sidebar-link" id="sidebar-directions">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                        Directions
+                    </a>
+                    <a href="#" class="sidebar-link sidebar-link--highlight" id="sidebar-chatbot">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                        External AI Chatbot
+                        <span class="sidebar-badge">AI</span>
+                    </a>
+                </nav>
+                <div class="sidebar-status">
+                    <div class="status-row">
+                        <span class="status-dot status-dot--red"></span>
+                        <span>3 Critical Zones</span>
                     </div>
-                    <div class="stat">
-                        <span class="stat-number">24/7</span>
-                        <span class="stat-label">Support</span>
+                    <div class="status-row">
+                        <span class="status-dot status-dot--yellow"></span>
+                        <span>5 Caution Areas</span>
                     </div>
+                    <div class="status-row">
+                        <span class="status-dot status-dot--green"></span>
+                        <span>12 Clear Routes</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Map Area -->
+            <div class="map-main" id="map-main">
+                <svg class="map-svg" viewBox="0 0 900 500" preserveAspectRatio="xMidYMid slice">
+                    <defs>
+                        <!-- Water gradient -->
+                        <linearGradient id="waterGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#0d1117"/>
+                            <stop offset="100%" stop-color="#0a1628"/>
+                        </linearGradient>
+                        <!-- Land gradient -->
+                        <linearGradient id="landGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#1a1d23"/>
+                            <stop offset="100%" stop-color="#21262d"/>
+                        </linearGradient>
+                        <!-- Route glow -->
+                        <filter id="routeGlow">
+                            <feGaussianBlur stdDeviation="3" result="blur"/>
+                            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                        <!-- Node glow red -->
+                        <filter id="nodeGlowRed">
+                            <feGaussianBlur stdDeviation="6" result="blur"/>
+                            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                        <!-- Node glow yellow -->
+                        <filter id="nodeGlowYellow">
+                            <feGaussianBlur stdDeviation="4" result="blur"/>
+                            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                        <!-- Node glow green -->
+                        <filter id="nodeGlowGreen">
+                            <feGaussianBlur stdDeviation="4" result="blur"/>
+                            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                        <!-- Grid pattern -->
+                        <pattern id="gridPattern" width="40" height="40" patternUnits="userSpaceOnUse">
+                            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="0.5"/>
+                        </pattern>
+                    </defs>
+
+                    <!-- Water background -->
+                    <rect width="900" height="500" fill="url(#waterGrad)"/>
+                    <rect width="900" height="500" fill="url(#gridPattern)"/>
+
+                    <!-- Landmasses -->
+                    <path d="M0,0 L350,0 L380,60 L400,120 L370,200 L390,280 L350,350 L300,400 L250,370 L200,400 L150,380 L100,420 L50,400 L0,350 Z" fill="url(#landGrad)" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                    <path d="M500,0 L900,0 L900,200 L850,250 L870,320 L900,380 L900,500 L700,500 L650,450 L600,480 L550,440 L500,460 L450,420 L470,350 L520,300 L500,240 L530,180 L510,120 L540,60 Z" fill="url(#landGrad)" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                    <path d="M200,150 L280,130 L320,170 L300,230 L240,250 L190,210 Z" fill="#191d24" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                    <ellipse cx="450" cy="400" rx="80" ry="50" fill="url(#landGrad)" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+
+                    <!-- Road network (subtle grid lines on land) -->
+                    <line x1="50" y1="100" x2="300" y2="100" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                    <line x1="100" y1="50" x2="100" y2="350" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                    <line x1="200" y1="80" x2="200" y2="350" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                    <line x1="550" y1="50" x2="550" y2="400" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                    <line x1="650" y1="100" x2="850" y2="100" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                    <line x1="700" y1="50" x2="700" y2="450" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                    <line x1="550" y1="200" x2="850" y2="200" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                    <line x1="550" y1="300" x2="800" y2="300" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+
+                    <!-- PRIMARY ROUTE (Green → Yellow → Red → Diverted) -->
+                    <!-- Safe segment (green dashed glow) -->
+                    <path d="M100,350 L150,300 L200,280 L250,260" stroke="#22c55e" stroke-width="3" fill="none" stroke-dasharray="8,4" filter="url(#routeGlow)" opacity="0.9" class="route-animate"/>
+
+                    <!-- Caution segment (yellow) -->
+                    <path d="M250,260 L320,230 L380,210 L420,190" stroke="#eab308" stroke-width="3" fill="none" stroke-dasharray="8,4" filter="url(#routeGlow)" opacity="0.9" class="route-animate"/>
+
+                    <!-- Danger zone + crossed path (red, struck-through) -->
+                    <path d="M420,190 L480,170 L520,150" stroke="#ef4444" stroke-width="3" fill="none" stroke-dasharray="6,6" filter="url(#routeGlow)" opacity="0.7" class="route-animate"/>
+                    <!-- X mark on blocked route -->
+                    <line x1="490" y1="155" x2="510" y2="175" stroke="#ef4444" stroke-width="2.5" opacity="0.9"/>
+                    <line x1="510" y1="155" x2="490" y2="175" stroke="#ef4444" stroke-width="2.5" opacity="0.9"/>
+
+                    <!-- DIVERSION ROUTE (actively diverting away from red node) -->
+                    <path d="M420,190 L430,230 L460,270 L520,290 L580,270 L640,230 L700,200" stroke="#818cf8" stroke-width="3" fill="none" stroke-dasharray="10,5" filter="url(#routeGlow)" opacity="0.85" class="route-animate-divert"/>
+                    <!-- Diversion arrow indicator -->
+                    <polygon points="700,200 690,195 690,205" fill="#818cf8" opacity="0.9"/>
+
+                    <!-- Continuation to destination (green) -->
+                    <path d="M700,200 L750,180 L800,150" stroke="#22c55e" stroke-width="3" fill="none" stroke-dasharray="8,4" filter="url(#routeGlow)" opacity="0.9" class="route-animate"/>
+
+                    <!-- ============ HAZARD NODES ============ -->
+                    <!-- GREEN NODES (Safe Zone / Clear Path) -->
+                    <circle cx="100" cy="350" r="8" fill="#22c55e" filter="url(#nodeGlowGreen)" opacity="0.9" class="node-pulse-green"/>
+                    <circle cx="100" cy="350" r="4" fill="#fff" opacity="0.7"/>
+                    <text x="100" y="375" text-anchor="middle" fill="#22c55e" font-size="9" font-family="Inter" opacity="0.8">START</text>
+
+                    <circle cx="250" cy="260" r="6" fill="#22c55e" filter="url(#nodeGlowGreen)" opacity="0.8" class="node-pulse-green"/>
+                    <circle cx="250" cy="260" r="3" fill="#fff" opacity="0.6"/>
+
+                    <circle cx="800" cy="150" r="8" fill="#22c55e" filter="url(#nodeGlowGreen)" opacity="0.9" class="node-pulse-green"/>
+                    <circle cx="800" cy="150" r="4" fill="#fff" opacity="0.7"/>
+                    <text x="800" y="140" text-anchor="middle" fill="#22c55e" font-size="9" font-family="Inter" opacity="0.8">DEST</text>
+
+                    <!-- YELLOW NODES (Moderate Caution) -->
+                    <circle cx="320" cy="230" r="7" fill="#eab308" filter="url(#nodeGlowYellow)" opacity="0.9" class="node-pulse-yellow"/>
+                    <circle cx="320" cy="230" r="3.5" fill="#fff" opacity="0.6"/>
+                    <text x="320" y="220" text-anchor="middle" fill="#eab308" font-size="8" font-family="Inter" opacity="0.7">CAUTION</text>
+
+                    <circle cx="420" cy="190" r="7" fill="#eab308" filter="url(#nodeGlowYellow)" opacity="0.9" class="node-pulse-yellow"/>
+                    <circle cx="420" cy="190" r="3.5" fill="#fff" opacity="0.6"/>
+
+                    <!-- RED NODES (Critical / Accident) -->
+                    <circle cx="500" cy="165" r="10" fill="#ef4444" filter="url(#nodeGlowRed)" opacity="0.95" class="node-pulse-red"/>
+                    <circle cx="500" cy="165" r="5" fill="#fff" opacity="0.8"/>
+                    <text x="500" y="150" text-anchor="middle" fill="#ef4444" font-size="9" font-family="Inter" font-weight="600" opacity="0.9">ACCIDENT</text>
+                    <!-- Danger ring -->
+                    <circle cx="500" cy="165" r="18" fill="none" stroke="#ef4444" stroke-width="1" stroke-dasharray="3,3" opacity="0.4" class="danger-ring"/>
+
+                    <!-- Additional ambient nodes -->
+                    <circle cx="640" cy="230" r="5" fill="#22c55e" filter="url(#nodeGlowGreen)" opacity="0.6" class="node-pulse-green"/>
+                    <circle cx="580" cy="270" r="5" fill="#818cf8" opacity="0.5"/>
+                    <text x="520" y="305" text-anchor="middle" fill="#818cf8" font-size="8" font-family="Inter" opacity="0.6">DIVERSION ROUTE</text>
+
+                    <!-- Legend overlay -->
+                    <rect x="720" y="380" width="160" height="105" rx="8" fill="rgba(10,10,10,0.8)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                    <text x="736" y="400" fill="#fff" font-size="10" font-family="Inter" font-weight="600" opacity="0.9">Risk Indicators</text>
+                    <circle cx="744" cy="415" r="4" fill="#ef4444"/><text x="755" y="418" fill="#a1a1aa" font-size="9" font-family="Inter">Critical / Accident</text>
+                    <circle cx="744" cy="435" r="4" fill="#eab308"/><text x="755" y="438" fill="#a1a1aa" font-size="9" font-family="Inter">Moderate Caution</text>
+                    <circle cx="744" cy="455" r="4" fill="#22c55e"/><text x="755" y="458" fill="#a1a1aa" font-size="9" font-family="Inter">Safe Zone / Clear</text>
+                    <circle cx="744" cy="475" r="4" fill="#818cf8"/><text x="755" y="478" fill="#a1a1aa" font-size="9" font-family="Inter">Active Diversion</text>
+                </svg>
+
+                <!-- Map overlay HUD elements -->
+                <div class="map-hud map-hud--top">
+                    <span class="hud-label">LIVE</span>
+                    <span class="hud-dot"></span>
+                    <span class="hud-text">Mumbai Metropolitan • 3 Active Incidents</span>
+                </div>
+                <div class="map-hud map-hud--bottom">
+                    <span class="hud-text">Route Diversion Active</span>
+                    <span class="hud-separator">|</span>
+                    <span class="hud-text">ETA Updated: -12 min via alternate</span>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="contact" id="contact">
-        <div class="section-header">
-            <h2>Get In Touch</h2>
-            <p>Interested in ResQNav? Reach out and let's talk about how we can help your team.</p>
+    <!-- ==================== SMART CITY SECTION ==================== -->
+    <section class="smart-city" id="smart-city">
+        <div class="section-label">
+            <span class="section-label-dot"></span>
+            How ResQNav Works
         </div>
-        <form class="contact-form" id="contactForm">
-            <div class="form-row">
-                <input type="text" placeholder="Your Name" required id="nameInput">
-                <input type="email" placeholder="Your Email" required id="emailInput">
+        <div class="smart-city-content">
+            <div class="flow-step">
+                <div class="flow-number">01</div>
+                <h3>Detect &amp; Report</h3>
+                <p>Users report accidents via the AI Chatbot with geotagged images and live GPS. Our system verifies incidents using spatial database checks.</p>
             </div>
-            <textarea placeholder="Your Message" rows="5" required id="messageInput"></textarea>
-            <button type="submit" class="btn btn-primary" id="submitBtn">Send Message</button>
-        </form>
+            <div class="flow-connector"></div>
+            <div class="flow-step">
+                <div class="flow-number">02</div>
+                <h3>Verify &amp; Alert</h3>
+                <p>Custom filters eliminate false reports. Verified incidents instantly alert hospitals, fire stations, and nearby emergency services.</p>
+            </div>
+            <div class="flow-connector"></div>
+            <div class="flow-step">
+                <div class="flow-number">03</div>
+                <h3>Reroute &amp; Rescue</h3>
+                <p>Emergency responders get priority green corridors. Commuters are dynamically rerouted to clear the path — saving lives and time.</p>
+            </div>
+        </div>
     </section>
 
-    <footer class="footer">
+    <!-- ==================== TECH STACK / FEATURES GRID ==================== -->
+    <section class="tech-stack" id="tech-stack">
+        <div class="section-label">
+            <span class="section-label-dot"></span>
+            Core Technology
+        </div>
+        <h2 class="section-heading">Built for speed, accuracy,<br>and <span class="text-gradient">real-time intelligence.</span></h2>
+
+        <div class="bento-grid" id="bento-grid">
+            <div class="bento-card" id="bento-chatbot">
+                <div class="bento-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                        <circle cx="9" cy="10" r="1" fill="#818cf8"/>
+                        <circle cx="12" cy="10" r="1" fill="#818cf8"/>
+                        <circle cx="15" cy="10" r="1" fill="#818cf8"/>
+                    </svg>
+                </div>
+                <h3>Standalone AI Chatbot</h3>
+                <p>Our separate Gemini-powered chatbot enables fast, verified incident reporting with geotagged images and live GPS for instant emergency dispatch.</p>
+                <div class="bento-tag">Gemini AI</div>
+            </div>
+
+            <div class="bento-card" id="bento-maps">
+                <div class="bento-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                </div>
+                <h3>Live Priority Maps</h3>
+                <p>Dark-mode Maps API integration with real-time route overrides. Emergency vehicles get priority green corridors while commuter traffic is intelligently diverted.</p>
+                <div class="bento-tag">Maps API</div>
+            </div>
+
+            <div class="bento-card" id="bento-environment">
+                <div class="bento-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 010 7.75"/>
+                    </svg>
+                </div>
+                <h3>Dynamic Environment Data</h3>
+                <p>Fuses real-time weather feeds and traffic signal APIs to calculate the safest, fastest route considering live road conditions and environmental hazards.</p>
+                <div class="bento-tag">Weather & Traffic APIs</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="footer" id="footer">
         <div class="footer-content">
             <div class="footer-brand">
-                <span class="nav-icon">🚨</span>
+                <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
+                    <rect x="2" y="2" width="24" height="24" rx="6" stroke="#818cf8" stroke-width="2" fill="none"/>
+                    <path d="M9 14L13 18L19 10" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
                 <span>ResQNav</span>
             </div>
-            <p>© 2026 ResQNav. Built to save lives.</p>
+            <p>&copy; 2026 ResQNav. Built to save lives.</p>
+            <div class="footer-links">
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+                <a href="#">GitHub</a>
+            </div>
         </div>
     </footer>
 

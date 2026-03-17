@@ -1,38 +1,4 @@
-// ==================== PARTICLE EFFECT ====================
-function createParticles() {
-    const container = document.getElementById('particles');
-    if (!container) return;
-
-    for (let i = 0; i < 40; i++) {
-        const particle = document.createElement('div');
-        particle.style.cssText = `
-            position: absolute;
-            width: ${Math.random() * 3 + 1}px;
-            height: ${Math.random() * 3 + 1}px;
-            background: rgba(255, ${Math.floor(Math.random() * 140 + 60)}, ${Math.floor(Math.random() * 60)}, ${Math.random() * 0.4 + 0.1});
-            border-radius: 50%;
-            top: ${Math.random() * 100}%;
-            left: ${Math.random() * 100}%;
-            animation: float ${Math.random() * 6 + 4}s ease-in-out infinite;
-            animation-delay: ${Math.random() * 4}s;
-        `;
-        container.appendChild(particle);
-    }
-
-    // Add float keyframes
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
-            25% { transform: translate(${Math.random() * 40 - 20}px, -${Math.random() * 40 + 20}px) scale(1.2); opacity: 0.6; }
-            50% { transform: translate(${Math.random() * 30 - 15}px, -${Math.random() * 60 + 30}px) scale(0.8); opacity: 0.4; }
-            75% { transform: translate(${Math.random() * 20 - 10}px, -${Math.random() * 30 + 10}px) scale(1.1); opacity: 0.5; }
-        }
-    `;
-    document.head.appendChild(style);
-}
-
-// ==================== SCROLL ANIMATIONS ====================
+// ==================== SCROLL REVEAL ANIMATIONS ====================
 function initScrollAnimations() {
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -40,77 +6,134 @@ function initScrollAnimations() {
                 entry.target.classList.add('visible');
             }
         });
-    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
 
-    // Observe feature cards and sections
-    document.querySelectorAll('.feature-card, .about-content, .contact-form, .section-header').forEach(el => {
+    document.querySelectorAll(
+        '.bento-card, .flow-step, .section-label, .section-heading, .map-dashboard, .smart-city-content'
+    ).forEach(el => {
         el.classList.add('fade-in');
         observer.observe(el);
     });
 }
 
-// ==================== NAVBAR SCROLL EFFECT ====================
+// ==================== NAVBAR SCROLL BEHAVIOR ====================
 function initNavbar() {
     const navbar = document.getElementById('navbar');
-    let lastScroll = 0;
+    if (!navbar) return;
 
     window.addEventListener('scroll', () => {
-        const currentScroll = window.scrollY;
-
-        if (currentScroll > 80) {
-            navbar.style.padding = '0.7rem 3rem';
-            navbar.style.background = 'rgba(10, 10, 15, 0.95)';
+        if (window.scrollY > 60) {
+            navbar.style.background = 'rgba(10, 10, 10, 0.92)';
+            navbar.style.borderBottomColor = 'rgba(255,255,255,0.06)';
         } else {
-            navbar.style.padding = '1rem 3rem';
-            navbar.style.background = 'rgba(10, 10, 15, 0.8)';
+            navbar.style.background = 'rgba(10, 10, 10, 0.7)';
+            navbar.style.borderBottomColor = 'rgba(255,255,255,0.08)';
         }
-
-        lastScroll = currentScroll;
     });
 }
 
-// ==================== CONTACT FORM ====================
-function initContactForm() {
-    const form = document.getElementById('contactForm');
-    if (!form) return;
-
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        const btn = document.getElementById('submitBtn');
-        btn.textContent = 'Sending...';
-        btn.style.opacity = '0.7';
-
-        setTimeout(() => {
-            btn.textContent = '✓ Sent!';
-            btn.style.opacity = '1';
-            form.reset();
-
-            setTimeout(() => {
-                btn.textContent = 'Send Message';
-            }, 2500);
-        }, 1200);
-    });
-}
-
-// ==================== SMOOTH SCROLL FOR NAV LINKS ====================
+// ==================== SMOOTH SCROLL ====================
 function initSmoothScroll() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', (e) => {
+            const href = anchor.getAttribute('href');
+            if (href === '#') return;
             e.preventDefault();
-            const target = document.querySelector(anchor.getAttribute('href'));
+            const target = document.querySelector(href);
             if (target) {
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const navHeight = document.getElementById('navbar')?.offsetHeight || 56;
+                const y = target.getBoundingClientRect().top + window.scrollY - navHeight;
+                window.scrollTo({ top: y, behavior: 'smooth' });
             }
+        });
+    });
+}
+
+// ==================== SIDEBAR LINK INTERACTION ====================
+function initSidebar() {
+    const links = document.querySelectorAll('.sidebar-link');
+    links.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            links.forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+        });
+    });
+}
+
+// ==================== MOBILE MENU ====================
+function initMobileMenu() {
+    const btn = document.getElementById('mobile-menu-btn');
+    const navLinks = document.getElementById('nav-links');
+    const navActions = document.getElementById('nav-actions');
+
+    if (!btn) return;
+
+    btn.addEventListener('click', () => {
+        const isOpen = navLinks.style.display === 'flex';
+        navLinks.style.display = isOpen ? 'none' : 'flex';
+        navLinks.style.position = 'absolute';
+        navLinks.style.top = '56px';
+        navLinks.style.left = '0';
+        navLinks.style.right = '0';
+        navLinks.style.flexDirection = 'column';
+        navLinks.style.padding = '16px 24px';
+        navLinks.style.background = 'rgba(10,10,10,0.95)';
+        navLinks.style.borderBottom = '1px solid rgba(255,255,255,0.08)';
+        navLinks.style.gap = '12px';
+        navLinks.style.transform = 'none';
+
+        if (navActions) {
+            navActions.style.display = isOpen ? 'none' : 'flex';
+            navActions.style.position = 'absolute';
+            navActions.style.top = navLinks.scrollHeight + 56 + 'px';
+            navActions.style.left = '0';
+            navActions.style.right = '0';
+            navActions.style.padding = '16px 24px';
+            navActions.style.background = 'rgba(10,10,10,0.95)';
+            navActions.style.borderBottom = '1px solid rgba(255,255,255,0.08)';
+        }
+    });
+}
+
+// ==================== HERO BADGE TYPING EFFECT ====================
+function initBadgeGlow() {
+    const badge = document.querySelector('.hero-badge');
+    if (!badge) return;
+
+    setInterval(() => {
+        badge.style.borderColor = 'rgba(129, 140, 248, 0.4)';
+        badge.style.boxShadow = '0 0 20px rgba(129, 140, 248, 0.1)';
+        setTimeout(() => {
+            badge.style.borderColor = 'rgba(129, 140, 248, 0.2)';
+            badge.style.boxShadow = 'none';
+        }, 1200);
+    }, 3000);
+}
+
+// ==================== BENTO CARD HOVER GLOW ====================
+function initBentoGlow() {
+    document.querySelectorAll('.bento-card').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            card.style.background = `radial-gradient(400px circle at ${x}px ${y}px, rgba(129,140,248,0.04), #111111 80%)`;
+        });
+
+        card.addEventListener('mouseleave', () => {
+            card.style.background = '#111111';
         });
     });
 }
 
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
-    createParticles();
     initScrollAnimations();
     initNavbar();
-    initContactForm();
     initSmoothScroll();
+    initSidebar();
+    initMobileMenu();
+    initBadgeGlow();
+    initBentoGlow();
 });

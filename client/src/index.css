@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --color-bg: #0A0A0A;
+  --color-surface: #111111;
+  --color-surface-2: #191919;
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-subtle: rgba(255, 255, 255, 0.06);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #0A0A0A;
+  color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+/* Infinite Marquee */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+/* Outlined / Stroke Text */
+.marquee-stroke {
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.12);
+}
+
+/* Background drift */
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(40px, 20px); }
+}
+@keyframes drift-reverse {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-30px, -15px); }
+}
+.animate-drift {
+  animation: drift 20s ease-in-out infinite;
+}
+.animate-drift-reverse {
+  animation: drift-reverse 25s ease-in-out infinite;
+}
