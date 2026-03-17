@@ -15,11 +15,13 @@ import Product from './pages/Product';
 import Features from './pages/Features';
 import HowItWorks from './pages/HowItWorks';
 import LiveRadar from './pages/LiveRadar';
+import CustomCursor from './components/CustomCursor';
 
 export default function App() {
   return (
     <Router>
       <AuthProvider>
+        <CustomCursor />
         <Routes>
           {/* Full-screen Chat Engine (own layout, no Navbar) */}
           <Route path="/chat" element={<ChatApp />} />
