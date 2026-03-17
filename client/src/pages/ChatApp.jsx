@@ -675,11 +675,14 @@ export default function ChatApp() {
       saveMessageToFirestore(chatId, aiMsg);
     } catch (err) {
       console.error('API call failed:', err);
+      const apiError = err.response?.data?.error;
+      const errorText = typeof apiError === 'string' 
+        ? apiError 
+        : (apiError?.message || '⚠ Connection failed. Make sure the server is healthy.');
+
       const errorMsg = {
         role: 'ai',
-        text:
-          err.response?.data?.error ||
-          '⚠ Connection failed. Make sure the server is running on port 5000 and GEMINI_API_KEY is set.',
+        text: errorText,
         time: getTime(),
       };
       setMessages((prev) => [...prev, errorMsg]);
