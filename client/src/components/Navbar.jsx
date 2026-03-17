@@ -37,18 +37,18 @@ export default function Navbar() {
 
       {/* Center: Links */}
       <div className="hidden md:flex items-center gap-8">
-        <Link to="/" className="text-[13px] font-medium text-zinc-400 hover:text-white transition-colors">
+        <Link to="/product" className="text-[13px] font-medium text-zinc-400 hover:text-white transition-colors">
           Product
         </Link>
-        <a href="#features" className="text-[13px] font-medium text-zinc-400 hover:text-white transition-colors">
+        <Link to="/features" className="text-[13px] font-medium text-zinc-400 hover:text-white transition-colors">
           Features
-        </a>
-        <a href="#how-it-works" className="text-[13px] font-medium text-zinc-400 hover:text-white transition-colors">
+        </Link>
+        <Link to="/how-it-works" className="text-[13px] font-medium text-zinc-400 hover:text-white transition-colors">
           How it Works
-        </a>
-        <a href="#tech-stack" className="text-[13px] font-medium text-zinc-400 hover:text-white transition-colors">
-          Tech Stack
-        </a>
+        </Link>
+        <Link to="/radar" className="text-[13px] font-medium text-zinc-400 hover:text-white transition-colors">
+          Live Radar
+        </Link>
       </div>
 
       {/* Right: Auth */}

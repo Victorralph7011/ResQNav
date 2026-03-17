@@ -11,6 +11,10 @@ import Emergency from './pages/Emergency';
 import MapDemo from './pages/MapDemo';
 import ChatbotDemo from './pages/ChatbotDemo';
 import ChatApp from './pages/ChatApp';
+import Product from './pages/Product';
+import Features from './pages/Features';
+import HowItWorks from './pages/HowItWorks';
+import LiveRadar from './pages/LiveRadar';
 
 export default function App() {
   return (
@@ -29,6 +33,10 @@ export default function App() {
                 <Routes>
                   {/* Public Routes */}
                   <Route path="/" element={<><Home /><Footer /></>} />
+                  <Route path="/product" element={<><Product /><Footer /></>} />
+                  <Route path="/features" element={<><Features /><Footer /></>} />
+                  <Route path="/how-it-works" element={<><HowItWorks /><Footer /></>} />
+                  <Route path="/radar" element={<LiveRadar />} />
                   <Route path="/auth/commuter" element={<CommuterAuth />} />
                   <Route path="/auth/responder" element={<ExtremityAuth />} />
                   <Route path="/map-demo" element={<MapDemo />} />

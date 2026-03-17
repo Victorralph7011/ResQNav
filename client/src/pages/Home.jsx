@@ -1,7 +1,10 @@
 import { useRef, useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useSpring, useInView } from 'framer-motion';
+import { Map, Marker } from '@vis.gl/react-maplibre';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import ChatbotModal from '../components/ChatbotModal';
+import { useAuth } from '../context/AuthContext';
 
 /* ═══════════════════════════════════════════════════
    ANIMATED BACKGROUND — subtle moving grid + noise
@@ -129,7 +132,7 @@ function StickyMapSequence() {
   const progressWidth = useTransform(smoothProgress, [0, 1], ['0%', '100%']);
 
   return (
-    <section ref={containerRef} className="relative h-[400vh]">
+    <section ref={containerRef} className="relative h-[300vh]">
       <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center">
         {/* Dark map canvas */}
         <div className="absolute inset-0 bg-[#080808]">
@@ -587,6 +590,8 @@ function EnvironmentFeature() {
 export default function Home() {
   const heroRef = useRef(null);
   const [chatbotOpen, setChatbotOpen] = useState(false);
+  const { user, userRole } = useAuth();
+  const navigate = useNavigate();
   const { scrollYProgress: heroScroll } = useScroll({
     target: heroRef,
     offset: ['start start', 'end start'],
@@ -597,6 +602,18 @@ export default function Home() {
 
   return (
     <div className="overflow-x-hidden bg-[#0A0A0A] relative">
+      {/* ═══════════ FIXED CITY-GRID BACKGROUND ═══════════ */}
+      <div
+        className="fixed inset-0 w-full h-screen z-0 pointer-events-none"
+        style={{
+          backgroundImage: "url('/images/city-grid.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          opacity: 0.2
+        }}
+      />
+
       {/* ═══════════ BACKGROUND TEXTURE ═══════════ */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute inset-0 opacity-[0.04]" style={{backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%270 0 256 256%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.9%27 numOctaves=%274%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23n)%27/%3E%3C/svg%3E")', mixBlendMode: 'overlay'}} />
@@ -605,7 +622,7 @@ export default function Home() {
       </div>
 
       {/* ═══════════ HERO ═══════════ */}
-      <section ref={heroRef} className="relative h-screen flex flex-col items-center justify-center">
+      <section ref={heroRef} className="relative z-20 bg-[#0A0A0A] h-screen flex flex-col items-center justify-center">
         <AnimatedGrid />
 
         <motion.div
@@ -620,7 +637,7 @@ export default function Home() {
             className="inline-flex items-center gap-2 px-4 py-1.5 mb-10 rounded-full border border-white/[0.06] bg-white/[0.02]"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" />
-            <span className="text-[12px] font-semibold text-zinc-600 tracking-wider uppercase">Powered by Gemini AI</span>
+            <span className="text-[12px] font-semibold text-zinc-600 tracking-wider uppercase">Powered by ResQNav</span>
           </motion.div>
 
           {/* Massive hero text */}
@@ -654,19 +671,19 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 1.5, ease: [0.22, 1, 0.36, 1] }}
             className="flex items-center justify-center gap-4 mt-12"
           >
-            <Link
-              to="/auth/commuter"
-              className="group inline-flex items-center gap-2 px-7 py-3.5 bg-white text-black text-[14px] font-semibold rounded-full hover:bg-zinc-200 transition-all duration-300"
+            <button
+              onClick={() => navigate(user ? '/navigation' : '/auth/commuter')}
+              className="group inline-flex items-center gap-2 px-7 py-3.5 bg-white text-black text-[14px] font-semibold rounded-full hover:bg-zinc-200 transition-all duration-300 cursor-pointer"
             >
-              Get Started
+              {user ? 'Go to Dashboard' : 'Get Started'}
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-0.5 transition-transform"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-            </Link>
-            <Link
-              to="/chat"
-              className="inline-flex items-center gap-2 px-7 py-3.5 border border-white/[0.08] text-white/70 text-[14px] font-medium rounded-full hover:bg-white/[0.04] hover:text-white transition-all duration-300"
+            </button>
+            <button
+              onClick={() => navigate(user ? '/chat' : '/auth/responder')}
+              className="inline-flex items-center gap-2 px-7 py-3.5 border border-white/[0.08] text-white/70 text-[14px] font-medium rounded-full hover:bg-white/[0.04] hover:text-white transition-all duration-300 cursor-pointer"
             >
               Emergency Portal
-            </Link>
+            </button>
           </motion.div>
         </motion.div>
 
@@ -689,11 +706,120 @@ export default function Home() {
       {/* ═══════════ STICKY MAP SEQUENCE ═══════════ */}
       <StickyMapSequence />
 
+      {/* ═══════════ LIVE RADAR MAP BENTO BOX ═══════════ */}
+      <motion.div
+        initial={{ opacity: 0, y: 100 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-100px' }}
+        transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+        className="relative z-10 w-full max-w-6xl mx-auto h-[500px] md:h-[600px] rounded-[2rem] overflow-hidden border border-white/10 backdrop-blur-md bg-white/5 mt-8 mb-16 shadow-2xl"
+      >
+        {/* MapLibre — dark mode via CSS invert trick */}
+        <div
+          className="w-full h-full absolute inset-0"
+          style={{ filter: 'invert(100%) hue-rotate(180deg) contrast(90%)' }}
+        >
+          <Map
+            mapStyle="https://tiles.openfreemap.org/styles/liberty"
+            initialViewState={{
+              longitude: 77.209,
+              latitude: 28.6139,
+              zoom: 12,
+            }}
+            scrollZoom={false}
+            dragPan={false}
+            dragRotate={false}
+            doubleClickZoom={false}
+            touchZoomRotate={false}
+            style={{ width: '100%', height: '100%' }}
+          >
+            {/* Pulsing incident marker — styles are inverted back by parent filter */}
+            <Marker longitude={77.209} latitude={28.6139} anchor="center">
+              <div className="w-5 h-5 bg-red-500 rounded-full animate-pulse shadow-[0_0_20px_rgba(239,68,68,1)]" />
+            </Marker>
+          </Map>
+        </div>
+
+        {/* ── Floating UI overlays (above the inverted map) ── */}
+
+        {/* Status Badge — Top Left */}
+        <div className="absolute top-6 left-6 z-20 backdrop-blur-md bg-black/50 border border-white/10 text-white text-xs px-4 py-2 rounded-full flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+          <span className="font-semibold tracking-wide">LIVE &bull; Gridlock Detected</span>
+        </div>
+
+        {/* Action Overlay — Bottom Right */}
+        <div className="absolute bottom-6 right-6 z-20 backdrop-blur-md bg-white/10 border border-white/10 p-4 rounded-2xl text-white">
+          <div className="flex items-center gap-2 mb-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-60"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+            <span className="text-sm font-semibold">Priority routing engaged.</span>
+          </div>
+          <span className="text-[10px] text-zinc-400">Emergency corridor • NH-48 sector</span>
+        </div>
+
+        {/* ResQNav label — Top Right */}
+        <div className="absolute top-6 right-6 z-20 backdrop-blur-md bg-black/40 border border-white/10 text-white text-[10px] font-bold uppercase tracking-[0.15em] px-3 py-1.5 rounded-full">
+          ResQNav Radar
+        </div>
+      </motion.div>
+
+      {/* ═══════════ LUSION-STYLE IMAGE SHOWCASE ═══════════ */}
+      <section className="relative z-10 w-full max-w-[95rem] mx-auto px-6 md:px-12 pt-8 pb-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
+          {[
+            {
+              src: '/images/incident-verification.jpg',
+              title: 'Incident Verification',
+              category: 'AI • GEMINI VISION',
+            },
+            {
+              src: '/images/dynamic-rerouting.jpg',
+              title: 'Dynamic Rerouting',
+              category: 'WEB • OSRM ENGINE',
+              offset: true,
+            },
+            {
+              src: '/images/signal-override.jpg',
+              title: 'Signal Override System',
+              category: 'IOT • SMART INFRASTRUCTURE',
+            },
+            {
+              src: '/images/city-network.jpg',
+              title: 'Real-Time City Network',
+              category: 'DATA • AI MODEL',
+              offset: true,
+            },
+          ].map((card, i) => (
+            <motion.div
+              key={card.title}
+              initial={{ opacity: 0, y: 150, scale: 0.95 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              viewport={{ once: true, margin: "0px 0px -15% 0px" }}
+              transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: i * 0.15 }}
+              className={card.offset ? 'md:mt-32' : ''}
+            >
+              <div className="rounded-[2rem] overflow-hidden cursor-pointer">
+                <img
+                  src={card.src}
+                  alt={card.title}
+                  className="w-full h-[60vh] object-cover transition-transform duration-[1500ms] hover:scale-105"
+                  loading="lazy"
+                />
+              </div>
+              <div className="mt-5 px-1">
+                <span className="text-zinc-400 text-sm tracking-widest font-semibold uppercase mb-1 block">{card.category}</span>
+                <h3 className="text-white font-bold text-xl md:text-2xl">{card.title}</h3>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
       {/* ═══════════ MARQUEE ═══════════ */}
       <Marquee />
 
       {/* ═══════════ CINEMATIC FEATURES ═══════════ */}
-      <section className="py-20">
+      <section className="relative z-10 py-16">
         <div className="max-w-7xl mx-auto px-8 mb-20">
           <FadeUp>
             <span className="text-[11px] font-bold text-zinc-700 uppercase tracking-[0.2em] block mb-5">Core Technology</span>
@@ -711,7 +837,7 @@ export default function Home() {
       </section>
 
       {/* ═══════════ STATS ROW ═══════════ */}
-      <section className="border-y border-white/[0.04] py-20">
+      <section className="relative z-10 border-y border-white/[0.04] py-16">
         <div className="max-w-6xl mx-auto px-8 grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
             { num: '8s', label: 'Avg. corridor clearance' },
@@ -730,7 +856,7 @@ export default function Home() {
       </section>
 
       {/* ═══════════ MASSIVE CTA ═══════════ */}
-      <section className="py-40 px-8 text-center">
+      <section className="relative z-10 py-16 px-8 text-center">
         <FadeUp>
           <h2 className="text-[10vw] sm:text-[7vw] font-black text-white tracking-[-0.05em] leading-[0.9] mb-4">
             Ready?
@@ -743,19 +869,19 @@ export default function Home() {
         </FadeUp>
         <FadeUp delay={0.3}>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              to="/auth/commuter"
-              className="group inline-flex items-center gap-2 px-8 py-4 bg-white text-black text-[15px] font-bold rounded-full hover:bg-zinc-200 transition-all"
+            <button
+              onClick={() => navigate(user ? '/navigation' : '/auth/commuter')}
+              className="group inline-flex items-center gap-2 px-8 py-4 bg-white text-black text-[15px] font-bold rounded-full hover:bg-zinc-200 transition-all cursor-pointer"
             >
-              Enter Navigation
+              {user ? 'Go to Dashboard' : 'Enter Navigation'}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-0.5 transition-transform"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-            </Link>
-            <Link
-              to="/auth/responder"
-              className="text-[15px] font-medium text-zinc-600 hover:text-white transition-colors"
+            </button>
+            <button
+              onClick={() => navigate(user ? '/chat' : '/auth/responder')}
+              className="text-[15px] font-medium text-zinc-600 hover:text-white transition-colors cursor-pointer"
             >
               Responder Portal →
-            </Link>
+            </button>
           </div>
         </FadeUp>
       </section>

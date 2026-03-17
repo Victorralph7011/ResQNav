@@ -1,91 +1,182 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { GoogleMap, useJsApiLoader, DirectionsRenderer, Marker } from '@react-google-maps/api';
+import { useState, useRef, useCallback } from 'react';
+import { Map, Marker, Source, Layer } from '@vis.gl/react-maplibre';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import { Sun, Moon, Navigation as NavIcon, MapPin, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const libraries = ['places'];
+const INITIAL_VIEW = {
+  longitude: 77.209,
+  latitude: 28.6139,
+  zoom: 12,
+};
 
-const darkMapStyle = [
-  { elementType: 'geometry', stylers: [{ color: '#1a1a1a' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#0a0a0a' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#5a5a5a' }] },
-  { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#2a2a2a' }] },
-  { featureType: 'administrative.land_parcel', elementType: 'labels.text.fill', stylers: [{ color: '#444' }] },
-  { featureType: 'landscape', elementType: 'geometry', stylers: [{ color: '#181818' }] },
-  { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#1e1e1e' }] },
-  { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#555' }] },
-  { featureType: 'poi.park', elementType: 'geometry.fill', stylers: [{ color: '#1a2a1a' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2a2a2a' }] },
-  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#1a1a1a' }] },
-  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#333' }] },
-  { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#222' }] },
-  { featureType: 'road.arterial', elementType: 'geometry', stylers: [{ color: '#2c2c2c' }] },
-  { featureType: 'road.local', elementType: 'geometry', stylers: [{ color: '#242424' }] },
-  { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#1f1f1f' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0d1117' }] },
-  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#333' }] },
+// Mock incident locations around New Delhi
+const MOCK_INCIDENTS = [
+  { id: 1, lng: 77.2310, lat: 28.6280, label: 'Accident — Connaught Place' },
+  { id: 2, lng: 77.1855, lat: 28.5535, label: 'Road Closure — Saket' },
 ];
 
-const mapContainerStyle = { width: '100%', height: '100%' };
-const defaultCenter = { lat: 19.076, lng: 72.8777 }; // Mumbai
+// ── Nominatim Geocoding ──
+async function geocode(address) {
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`;
+  const res = await fetch(url, {
+    headers: { 'User-Agent': 'ResQNav/1.0' },
+  });
+  const data = await res.json();
+  if (!data.length) throw new Error(`Could not find location: "${address}"`);
+  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), display: data[0].display_name };
+}
+
+// ── OSRM Routing ──
+async function fetchRoute(startLng, startLat, endLng, endLat) {
+  const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (data.code !== 'Ok' || !data.routes.length) throw new Error('No route found');
+  const route = data.routes[0];
+  return {
+    geometry: route.geometry,
+    distance: route.distance, // meters
+    duration: route.duration, // seconds
+  };
+}
+
+// ── Format helpers ──
+function formatDistance(m) {
+  return m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${Math.round(m)} m`;
+}
+function formatDuration(s) {
+  const h = Math.floor(s / 3600);
+  const m = Math.round((s % 3600) / 60);
+  return h > 0 ? `${h} hr ${m} min` : `${m} min`;
+}
+
+// ── Route line style ──
+const routeLineLayer = {
+  id: 'route-line',
+  type: 'line',
+  paint: {
+    'line-color': '#3B82F6',
+    'line-width': 5,
+    'line-opacity': 0.9,
+  },
+  layout: {
+    'line-cap': 'round',
+    'line-join': 'round',
+  },
+};
+
+const routeGlowLayer = {
+  id: 'route-glow',
+  type: 'line',
+  paint: {
+    'line-color': '#3B82F6',
+    'line-width': 14,
+    'line-opacity': 0.15,
+    'line-blur': 8,
+  },
+  layout: {
+    'line-cap': 'round',
+    'line-join': 'round',
+  },
+};
 
 export default function Navigation() {
   const { user } = useAuth();
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
-  const [directions, setDirections] = useState(null);
   const [routeInfo, setRouteInfo] = useState(null);
-  const [mapError, setMapError] = useState(false);
+  const [routeGeoJSON, setRouteGeoJSON] = useState(null);
+  const [startCoord, setStartCoord] = useState(null);
+  const [endCoord, setEndCoord] = useState(null);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const mapRef = useRef(null);
 
-  const { isLoaded, loadError } = useJsApiLoader({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-    libraries,
-  });
-
-  const onMapLoad = useCallback((map) => {
-    mapRef.current = map;
+  const onMapLoad = useCallback((evt) => {
+    mapRef.current = evt.target;
   }, []);
 
-  const calculateRoute = async () => {
-    if (!origin || !destination) return;
-    if (!window.google) return;
+  // ── Calculate route via Nominatim + OSRM ──
+  const handleGetRoute = async () => {
+    if (!origin.trim() || !destination.trim()) return;
+    setIsLoading(true);
+    setError('');
+    setRouteInfo(null);
+    setRouteGeoJSON(null);
+    setStartCoord(null);
+    setEndCoord(null);
 
-    const directionsService = new window.google.maps.DirectionsService();
     try {
-      const results = await directionsService.route({
-        origin,
-        destination,
-        travelMode: window.google.maps.TravelMode.DRIVING,
-        provideRouteAlternatives: true,
+      // 1. Geocode both addresses
+      const [startGeo, endGeo] = await Promise.all([
+        geocode(origin),
+        geocode(destination),
+      ]);
+
+      setStartCoord(startGeo);
+      setEndCoord(endGeo);
+
+      // 2. Fetch driving route
+      const route = await fetchRoute(startGeo.lng, startGeo.lat, endGeo.lng, endGeo.lat);
+
+      // 3. Build GeoJSON for the route line
+      setRouteGeoJSON({
+        type: 'Feature',
+        geometry: route.geometry,
+        properties: {},
       });
-      setDirections(results);
-      if (results.routes[0]) {
-        const leg = results.routes[0].legs[0];
-        setRouteInfo({
-          distance: leg.distance.text,
-          duration: leg.duration.text,
-          start: leg.start_address,
-          end: leg.end_address,
-        });
+
+      // 4. Update route info panel
+      setRouteInfo({
+        distance: formatDistance(route.distance),
+        duration: formatDuration(route.duration),
+        start: startGeo.display,
+        end: endGeo.display,
+      });
+
+      // 5. Fit the map to the route bounds
+      if (mapRef.current) {
+        const coords = route.geometry.coordinates;
+        const lngs = coords.map((c) => c[0]);
+        const lats = coords.map((c) => c[1]);
+        mapRef.current.fitBounds(
+          [
+            [Math.min(...lngs), Math.min(...lats)],
+            [Math.max(...lngs), Math.max(...lats)],
+          ],
+          { padding: 80, duration: 1200 }
+        );
       }
     } catch (err) {
-      console.error('Route error:', err);
-      setMapError(true);
+      console.error('Routing error:', err);
+      setError(err.message || 'Failed to calculate route.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const clearRoute = () => {
-    setDirections(null);
     setRouteInfo(null);
+    setRouteGeoJSON(null);
+    setStartCoord(null);
+    setEndCoord(null);
     setOrigin('');
     setDestination('');
+    setError('');
   };
+
+  // Un-invert style for markers inside the inverted map wrapper
+  const markerCounterFilter = isDarkMode
+    ? 'invert(100%) hue-rotate(180deg) contrast(111%)'
+    : 'none';
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] pt-14 flex">
-      {/* Sidebar */}
-      <aside className="w-[320px] min-w-[320px] border-r border-white/[0.06] flex flex-col bg-[#0A0A0A]">
-        {/* Sidebar Header */}
+      {/* ── Left Sidebar ── */}
+      <aside className="w-[320px] min-w-[320px] border-r border-white/[0.06] flex flex-col bg-[#0A0A0A] z-10">
+        {/* Header */}
         <div className="px-5 py-4 border-b border-white/[0.06]">
           <h2 className="text-[15px] font-semibold text-white tracking-tight">Navigation</h2>
           <p className="text-[12px] text-zinc-600 mt-0.5">Enter your route below</p>
@@ -99,7 +190,8 @@ export default function Navigation() {
               type="text"
               value={origin}
               onChange={(e) => setOrigin(e.target.value)}
-              placeholder="Starting point"
+              onKeyDown={(e) => e.key === 'Enter' && handleGetRoute()}
+              placeholder="e.g. Connaught Place, Delhi"
               className="w-full px-3 py-2 bg-[#111111] border border-white/[0.08] rounded-lg text-white text-[13px] placeholder:text-zinc-600 focus:outline-none focus:border-white/[0.15] transition-colors"
             />
           </div>
@@ -109,18 +201,27 @@ export default function Navigation() {
               type="text"
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
-              placeholder="Where to?"
+              onKeyDown={(e) => e.key === 'Enter' && handleGetRoute()}
+              placeholder="e.g. India Gate, Delhi"
               className="w-full px-3 py-2 bg-[#111111] border border-white/[0.08] rounded-lg text-white text-[13px] placeholder:text-zinc-600 focus:outline-none focus:border-white/[0.15] transition-colors"
             />
           </div>
           <div className="flex gap-2">
             <button
-              onClick={calculateRoute}
-              className="flex-1 py-2 bg-white text-black text-[13px] font-semibold rounded-lg hover:bg-zinc-200 transition-colors cursor-pointer"
+              onClick={handleGetRoute}
+              disabled={isLoading || !origin.trim() || !destination.trim()}
+              className="flex-1 py-2 bg-white text-black text-[13px] font-semibold rounded-lg hover:bg-zinc-200 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Get Route
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  Calculating…
+                </>
+              ) : (
+                'Get Route'
+              )}
             </button>
-            {directions && (
+            {(routeInfo || error) && (
               <button
                 onClick={clearRoute}
                 className="px-3 py-2 border border-white/[0.08] text-zinc-400 text-[13px] rounded-lg hover:bg-white/[0.04] transition-colors cursor-pointer"
@@ -129,6 +230,13 @@ export default function Navigation() {
               </button>
             )}
           </div>
+
+          {/* Error message */}
+          {error && (
+            <p className="text-[12px] text-red-400 bg-red-400/[0.06] border border-red-400/[0.1] rounded-lg px-3 py-2">
+              {error}
+            </p>
+          )}
         </div>
 
         {/* Route Info */}
@@ -145,6 +253,16 @@ export default function Navigation() {
                 <span className="text-[13px] text-white font-medium">{routeInfo.duration}</span>
               </div>
             </div>
+            {routeInfo.start && (
+              <div className="mt-3 pt-3 border-t border-white/[0.04] space-y-1.5">
+                <p className="text-[11px] text-zinc-600 leading-relaxed truncate" title={routeInfo.start}>
+                  <span className="text-zinc-500 font-medium">From:</span> {routeInfo.start}
+                </p>
+                <p className="text-[11px] text-zinc-600 leading-relaxed truncate" title={routeInfo.end}>
+                  <span className="text-zinc-500 font-medium">To:</span> {routeInfo.end}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -161,62 +279,93 @@ export default function Navigation() {
         </div>
       </aside>
 
-      {/* Map Area */}
+      {/* ── Map Area ── */}
       <main className="flex-1 relative">
-        {loadError || mapError ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#111111]">
-            <div className="absolute inset-0" style={{
-              backgroundImage: 'linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)',
-              backgroundSize: '50px 50px'
-            }} />
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-zinc-600 mb-3 relative z-10">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
-            </svg>
-            <p className="text-[14px] text-zinc-500 relative z-10 mb-1 font-medium">Google Maps</p>
-            <p className="text-[13px] text-zinc-600 relative z-10 max-w-xs text-center">Add your Google Maps API key to <code className="text-zinc-500">.env</code> to enable the live dark-mode map.</p>
-          </div>
-        ) : !isLoaded ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#111111]">
-            <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-          </div>
-        ) : (
-          <GoogleMap
-            mapContainerStyle={mapContainerStyle}
-            center={defaultCenter}
-            zoom={12}
+        {/* Map with dark-mode CSS inversion filter */}
+        <div
+          className="absolute inset-0 w-full h-full z-0"
+          style={{
+            filter: isDarkMode
+              ? 'invert(100%) hue-rotate(180deg) contrast(90%)'
+              : 'none',
+            transition: 'filter 0.5s ease',
+          }}
+        >
+          <Map
+            initialViewState={INITIAL_VIEW}
+            style={{ width: '100%', height: '100%' }}
+            mapStyle="https://tiles.openfreemap.org/styles/liberty"
             onLoad={onMapLoad}
-            options={{
-              styles: darkMapStyle,
-              disableDefaultUI: true,
-              zoomControl: true,
-              mapTypeControl: false,
-              streetViewControl: false,
-              fullscreenControl: false,
-              backgroundColor: '#0A0A0A',
-            }}
           >
-            {directions && (
-              <DirectionsRenderer
-                directions={directions}
-                options={{
-                  polylineOptions: {
-                    strokeColor: '#ffffff',
-                    strokeWeight: 4,
-                    strokeOpacity: 0.8,
-                  },
-                  suppressMarkers: false,
-                }}
-              />
+            {/* ── Route line (glow + solid) ── */}
+            {routeGeoJSON && (
+              <Source id="route" type="geojson" data={routeGeoJSON}>
+                <Layer {...routeGlowLayer} />
+                <Layer {...routeLineLayer} />
+              </Source>
             )}
-          </GoogleMap>
-        )}
 
-        {/* Map HUD */}
-        <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 bg-[#0A0A0A]/80 backdrop-blur-sm border border-white/[0.08] rounded-lg pointer-events-none">
+            {/* ── Start marker (green) ── */}
+            {startCoord && (
+              <Marker longitude={startCoord.lng} latitude={startCoord.lat} anchor="bottom">
+                <div style={{ filter: markerCounterFilter }} className="flex flex-col items-center">
+                  <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg"
+                       style={{ boxShadow: '0 0 16px rgba(16,185,129,0.6)' }}>
+                    <NavIcon className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="w-0.5 h-2 bg-emerald-500/60" />
+                </div>
+              </Marker>
+            )}
+
+            {/* ── End marker (blue) ── */}
+            {endCoord && (
+              <Marker longitude={endCoord.lng} latitude={endCoord.lat} anchor="bottom">
+                <div style={{ filter: markerCounterFilter }} className="flex flex-col items-center">
+                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center shadow-lg"
+                       style={{ boxShadow: '0 0 16px rgba(59,130,246,0.6)' }}>
+                    <MapPin className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="w-0.5 h-2 bg-blue-500/60" />
+                </div>
+              </Marker>
+            )}
+
+            {/* ── Mock incident markers ── */}
+            {MOCK_INCIDENTS.map((inc) => (
+              <Marker key={inc.id} longitude={inc.lng} latitude={inc.lat} anchor="center">
+                <div
+                  className="w-4 h-4 bg-red-500 rounded-full"
+                  style={{
+                    boxShadow: '0 0 15px rgba(239,68,68,0.8)',
+                    filter: markerCounterFilter,
+                  }}
+                  title={inc.label}
+                />
+              </Marker>
+            ))}
+          </Map>
+        </div>
+
+        {/* HUD — top-left */}
+        <div className="absolute top-4 left-4 z-10 flex items-center gap-2 px-3 py-1.5 bg-[#0A0A0A]/80 backdrop-blur-sm border border-white/[0.08] rounded-lg pointer-events-none">
           <span className="text-[10px] font-bold text-zinc-400 tracking-wider">LIVE</span>
           <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" />
           <span className="text-[11px] text-zinc-600">Commuter Navigation</span>
         </div>
+
+        {/* Dark / Light toggle — bottom-right */}
+        <button
+          onClick={() => setIsDarkMode((d) => !d)}
+          className="absolute bottom-6 right-6 z-20 flex items-center justify-center w-10 h-10 rounded-full backdrop-blur-md bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 cursor-pointer shadow-lg"
+          title={isDarkMode ? 'Switch to Light Map' : 'Switch to Dark Map'}
+        >
+          {isDarkMode ? (
+            <Sun className="w-5 h-5 text-amber-300" />
+          ) : (
+            <Moon className="w-5 h-5 text-indigo-300" />
+          )}
+        </button>
       </main>
     </div>
   );

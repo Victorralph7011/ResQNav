@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
@@ -16,7 +16,14 @@ export default function ExtremityAuth() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { setUserRole } = useAuth();
+  const { setUserRole, user, userRole, loading: authLoading } = useAuth();
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate(userRole === 'responder' ? '/emergency' : '/navigation', { replace: true });
+    }
+  }, [user, userRole, authLoading, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

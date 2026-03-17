@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, updateProfile } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
@@ -16,7 +16,15 @@ export default function CommuterAuth() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
-  const { setUserRole } = useAuth();
+  const { setUserRole, user, userRole, loading: authLoading } = useAuth();
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    if (!authLoading && user) {
+      const target = userRole === 'responder' ? '/emergency' : '/navigation';
+      navigate(target, { replace: true });
+    }
+  }, [user, userRole, authLoading, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,13 +52,18 @@ export default function CommuterAuth() {
         setTimeout(() => navigate('/navigation'), 800);
       } else {
         await signInWithEmailAndPassword(auth, email, password);
-        // Fetch user role from Firestore
+        // Fetch user role — with a timeout so we never hang
         const currentUser = auth.currentUser;
         if (currentUser) {
-          const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-          if (userDoc.exists()) {
-            setUserRole(userDoc.data().role || 'commuter');
-          } else {
+          try {
+            const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+            if (userDoc.exists()) {
+              setUserRole(userDoc.data().role || 'commuter');
+            } else {
+              setUserRole('commuter');
+            }
+          } catch (err) {
+            console.error('Error fetching role on login:', err);
             setUserRole('commuter');
           }
         }

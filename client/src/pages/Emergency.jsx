@@ -1,65 +1,36 @@
-import { useState, useCallback, useRef } from 'react';
-import { GoogleMap, useJsApiLoader, DirectionsRenderer } from '@react-google-maps/api';
+import { useState } from 'react';
+import { Map, Marker } from '@vis.gl/react-maplibre';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import { Sun, Moon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const libraries = ['places'];
+const INITIAL_VIEW = {
+  longitude: 77.209,
+  latitude: 28.6139,
+  zoom: 13,
+};
 
-const darkMapStyle = [
-  { elementType: 'geometry', stylers: [{ color: '#1a1a1a' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#0a0a0a' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#5a5a5a' }] },
-  { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#2a2a2a' }] },
-  { featureType: 'landscape', elementType: 'geometry', stylers: [{ color: '#181818' }] },
-  { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#1e1e1e' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2a2a2a' }] },
-  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#333' }] },
-  { featureType: 'road.arterial', elementType: 'geometry', stylers: [{ color: '#2c2c2c' }] },
-  { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#1f1f1f' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0d1117' }] },
+const MOCK_INCIDENTS = [
+  { id: 1, lng: 77.2310, lat: 28.6280, type: 'Accident', location: 'Connaught Place', severity: 'Critical', time: '2 min ago' },
+  { id: 2, lng: 77.1855, lat: 28.5535, type: 'Road Closure', location: 'Saket District', severity: 'Moderate', time: '8 min ago' },
+  { id: 3, lng: 77.2507, lat: 28.5700, type: 'Fire', location: 'Lajpat Nagar', severity: 'Critical', time: '15 min ago' },
 ];
-
-const mapContainerStyle = { width: '100%', height: '100%' };
-const defaultCenter = { lat: 19.076, lng: 72.8777 };
 
 export default function Emergency() {
   const { user } = useAuth();
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
-  const [directions, setDirections] = useState(null);
   const [routeInfo, setRouteInfo] = useState(null);
   const [activeTab, setActiveTab] = useState('map');
-  const mapRef = useRef(null);
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
-  const { isLoaded, loadError } = useJsApiLoader({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-    libraries,
-  });
-
-  const onMapLoad = useCallback((map) => {
-    mapRef.current = map;
-  }, []);
-
-  const calculatePriorityRoute = async () => {
-    if (!origin || !destination || !window.google) return;
-    const directionsService = new window.google.maps.DirectionsService();
-    try {
-      const results = await directionsService.route({
-        origin,
-        destination,
-        travelMode: window.google.maps.TravelMode.DRIVING,
-        provideRouteAlternatives: true,
-      });
-      setDirections(results);
-      if (results.routes[0]) {
-        const leg = results.routes[0].legs[0];
-        setRouteInfo({
-          distance: leg.distance.text,
-          duration: leg.duration.text,
-        });
-      }
-    } catch (err) {
-      console.error('Priority route error:', err);
-    }
+  const calculatePriorityRoute = () => {
+    if (!origin || !destination) return;
+    // Mock route info
+    setRouteInfo({
+      distance: '5.2 km',
+      duration: '9 min',
+    });
   };
 
   const sidebarTabs = [
@@ -70,8 +41,8 @@ export default function Emergency() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] pt-14 flex">
-      {/* Sidebar */}
-      <aside className="w-[320px] min-w-[320px] border-r border-white/[0.06] flex flex-col bg-[#0A0A0A]">
+      {/* ── Sidebar (fully preserved) ── */}
+      <aside className="w-[320px] min-w-[320px] border-r border-white/[0.06] flex flex-col bg-[#0A0A0A] z-10">
         {/* Header */}
         <div className="px-5 py-4 border-b border-white/[0.06]">
           <div className="flex items-center gap-2 mb-1">
@@ -148,11 +119,7 @@ export default function Emergency() {
           {activeTab === 'incidents' && (
             <div className="px-5 py-5">
               <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-[0.08em] mb-4">Active Incidents</p>
-              {[
-                { id: 1, type: 'Accident', location: 'NH-48 near Bandra', severity: 'Critical', time: '2 min ago' },
-                { id: 2, type: 'Road Closure', location: 'Western Express Highway', severity: 'Moderate', time: '8 min ago' },
-                { id: 3, type: 'Fire', location: 'Andheri East, MIDC', severity: 'Critical', time: '15 min ago' },
-              ].map(incident => (
+              {MOCK_INCIDENTS.map(incident => (
                 <div key={incident.id} className="py-3 border-b border-white/[0.04]">
                   <div className="flex justify-between items-start mb-1">
                     <span className="text-[13px] font-medium text-white">{incident.type}</span>
@@ -179,7 +146,7 @@ export default function Emergency() {
               <h3 className="text-[15px] font-semibold text-white mb-1 tracking-tight">AI Chatbot</h3>
               <p className="text-[13px] text-zinc-500 text-center mb-5 max-w-[220px]">Report incidents with images and GPS for instant verification.</p>
               <a
-                href="#"
+                href="/chat"
                 className="text-[13px] font-semibold bg-white text-black px-5 py-2 rounded-full hover:bg-zinc-200 transition-colors"
               >
                 Open Chatbot →
@@ -201,61 +168,60 @@ export default function Emergency() {
         </div>
       </aside>
 
-      {/* Map Area */}
+      {/* ── Map Area ── */}
       <main className="flex-1 relative">
-        {loadError || !import.meta.env.VITE_GOOGLE_MAPS_API_KEY ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#111111]">
-            <div className="absolute inset-0" style={{
-              backgroundImage: 'linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)',
-              backgroundSize: '50px 50px'
-            }} />
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-zinc-600 mb-3 relative z-10">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
-            </svg>
-            <p className="text-[14px] text-zinc-500 relative z-10 mb-1 font-medium">Priority Map</p>
-            <p className="text-[13px] text-zinc-600 relative z-10 max-w-xs text-center">Add your Google Maps API key to <code className="text-zinc-500">.env</code> to enable the live dark-mode priority map.</p>
-          </div>
-        ) : !isLoaded ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#111111]">
-            <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-          </div>
-        ) : (
-          <GoogleMap
-            mapContainerStyle={mapContainerStyle}
-            center={defaultCenter}
-            zoom={13}
-            onLoad={onMapLoad}
-            options={{
-              styles: darkMapStyle,
-              disableDefaultUI: true,
-              zoomControl: true,
-              mapTypeControl: false,
-              streetViewControl: false,
-              fullscreenControl: false,
-              backgroundColor: '#0A0A0A',
-            }}
+        {/* Map with dark-mode CSS inversion filter */}
+        <div
+          className="absolute inset-0 w-full h-full z-0"
+          style={{
+            filter: isDarkMode
+              ? 'invert(100%) hue-rotate(180deg) contrast(90%)'
+              : 'none',
+            transition: 'filter 0.5s ease',
+          }}
+        >
+          <Map
+            initialViewState={INITIAL_VIEW}
+            style={{ width: '100%', height: '100%' }}
+            mapStyle="https://tiles.openfreemap.org/styles/liberty"
           >
-            {directions && (
-              <DirectionsRenderer
-                directions={directions}
-                options={{
-                  polylineOptions: {
-                    strokeColor: '#ffffff',
-                    strokeWeight: 5,
-                    strokeOpacity: 0.9,
-                  },
-                }}
-              />
-            )}
-          </GoogleMap>
-        )}
+            {/* Incident markers */}
+            {MOCK_INCIDENTS.map((inc) => (
+              <Marker key={inc.id} longitude={inc.lng} latitude={inc.lat} anchor="center">
+                <div
+                  className="w-4 h-4 bg-red-500 rounded-full"
+                  style={{
+                    boxShadow: '0 0 15px rgba(239,68,68,0.8)',
+                    filter: isDarkMode
+                      ? 'invert(100%) hue-rotate(180deg) contrast(111%)'
+                      : 'none',
+                  }}
+                  title={`${inc.type} — ${inc.location}`}
+                />
+              </Marker>
+            ))}
+          </Map>
+        </div>
 
-        {/* Emergency HUD */}
-        <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 bg-[#0A0A0A]/80 backdrop-blur-sm border border-white/[0.08] rounded-lg pointer-events-none">
+        {/* Emergency HUD — top-left */}
+        <div className="absolute top-4 left-4 z-10 flex items-center gap-2 px-3 py-1.5 bg-[#0A0A0A]/80 backdrop-blur-sm border border-white/[0.08] rounded-lg pointer-events-none">
           <span className="text-[10px] font-bold text-white tracking-wider">PRIORITY</span>
           <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
           <span className="text-[11px] text-zinc-500">Emergency Response Active</span>
         </div>
+
+        {/* Dark / Light toggle — bottom-right */}
+        <button
+          onClick={() => setIsDarkMode((d) => !d)}
+          className="absolute bottom-6 right-6 z-20 flex items-center justify-center w-10 h-10 rounded-full backdrop-blur-md bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 cursor-pointer shadow-lg"
+          title={isDarkMode ? 'Switch to Light Map' : 'Switch to Dark Map'}
+        >
+          {isDarkMode ? (
+            <Sun className="w-5 h-5 text-amber-300" />
+          ) : (
+            <Moon className="w-5 h-5 text-indigo-300" />
+          )}
+        </button>
       </main>
     </div>
   );
